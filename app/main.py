@@ -5,7 +5,15 @@ from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 
+# 우리가 만든 practice API router 가져오기
+from app.apis import practice_apis
+
+
 app = FastAPI()
+
+# practice_apis.py에서 만든 router를 FastAPI 앱에 등록
+app.include_router(practice_apis.router)
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -36,10 +44,12 @@ async def catch_all(path: str):
     # API나 정적 파일 경로는 제외 (FastAPI가 먼저 매칭하지 못한 경우에만 실행됨)
     if (
         path.startswith("api/v1")
+        or path.startswith("practice_api")
         or path.startswith("static/")
         or path.startswith("media/")
     ):
         from fastapi import HTTPException
 
         raise HTTPException(status_code=404)
+
     return FileResponse(BASE_DIR / "static" / "index.html")
