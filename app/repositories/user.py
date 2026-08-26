@@ -25,6 +25,35 @@ class UserRepository:
 
         return result.scalar_one_or_none()
 
+    # 이메일로 사용자 조회
+    async def find_by_email(self, email: str) -> User | None:
+        result = await self.session.execute(
+            select(User).where(User.email == email)
+        )
+
+        return result.scalar_one_or_none()
+
+    # 사용자 ID로 조회
+    async def find_by_id(self, user_id: int) -> User | None:
+        result = await self.session.execute(
+            select(User).where(User.id == user_id)
+        )
+
+        return result.scalar_one_or_none()
+
+    # 비밀번호 변경
+    async def update_password(
+        self,
+        user: User,
+        hashed_password: str,
+    ) -> User:
+        user.hashed_password = hashed_password
+
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
+
     # 새로운 사용자 저장
     async def create(self, user: User) -> User:
         self.session.add(user)

@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth import get_current_user
 from app.core.db.databases import async_get_db
-from app.schemas.user import UserCreate
+from app.models.user import User
+from app.schemas.user import UserCreate, UserPasswordUpdate
 from app.services.user import UserService
 
 
@@ -36,4 +38,28 @@ async def signup(
         "phone_number": user.phone_number,
         "role": user.role,
         "is_active": user.is_active,
+    }
+
+
+@router.patch("/me/password")
+async def change_password(
+    password_data: UserPasswordUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db),
+):
+    service = UserService(db)
+
+    try:
+        await service.change_password(
+            current_user,
+            password_data,
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )
+
+    return {
+        "message": "비밀번호가 변경되었습니다."
     }
