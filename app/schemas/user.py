@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.models.enums import Department, Gender
 
@@ -23,3 +23,14 @@ class UserLogin(BaseModel):
 class UserPasswordUpdate(BaseModel):
     current_password: str
     new_password: str
+
+
+# 회원 정보 수정 요청 데이터
+class UserProfileUpdate(BaseModel):
+    department: Department | None = None
+    phone_number: str | None = Field(
+        default=None,
+        min_length=10,
+        max_length=20,
+        pattern=r"^01[016789]-?\d{3,4}-?\d{4}$",
+    )

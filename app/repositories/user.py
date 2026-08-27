@@ -1,6 +1,7 @@
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.enums import Department
 from app.models.user import User
 
 
@@ -41,6 +42,17 @@ class UserRepository:
 
         return result.scalar_one_or_none()
 
+    # 휴대폰 번호로 사용자 조회
+    async def find_by_phone_number(
+        self,
+        phone_number: str,
+    ) -> User | None:
+        result = await self.session.execute(
+            select(User).where(User.phone_number == phone_number)
+        )
+
+        return result.scalar_one_or_none()
+
     # 전체 사용자 조회
     async def get_all_users(self) -> list[User]:
         result = await self.session.execute(
@@ -48,6 +60,25 @@ class UserRepository:
         )
 
         return list(result.scalars().all())
+
+    # 회원 정보 수정
+    async def update_profile(
+        self,
+        user: User,
+        department: Department | None = None,
+        phone_number: str | None = None,
+    ) -> User:
+        # 전달된 값만 수정
+        if department is not None:
+            user.department = department
+
+        if phone_number is not None:
+            user.phone_number = phone_number
+
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
 
     # 비밀번호 변경
     async def update_password(
