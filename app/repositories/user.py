@@ -41,6 +41,14 @@ class UserRepository:
 
         return result.scalar_one_or_none()
 
+    # 전체 사용자 조회
+    async def get_all_users(self) -> list[User]:
+        result = await self.session.execute(
+            select(User)
+        )
+
+        return list(result.scalars().all())
+
     # 비밀번호 변경
     async def update_password(
         self,
