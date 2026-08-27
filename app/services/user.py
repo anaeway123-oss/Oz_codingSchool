@@ -9,8 +9,12 @@ from app.core.security import (
 from app.models.enums import Role
 from app.models.user import User
 from app.repositories.user import UserRepository
-from app.schemas.user import UserCreate, UserLogin, UserPasswordUpdate
-
+from app.schemas.user import (
+    UserCreate,
+    UserLogin,
+    UserPasswordUpdate,
+    UserProfileUpdate,
+)
 
 password_hash = PasswordHash.recommended()
 
@@ -71,6 +75,43 @@ class UserService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
         }
+
+    # 회원 정보 수정
+    async def update_profile(
+        self,
+        user: User,
+        profile_data: UserProfileUpdate,
+    ) -> User:
+        # 요청에 실제로 포함된 값만 추출
+        update_data = profile_data.model_dump(
+            exclude_unset=True,
+            exclude_none=True,
+        )
+
+        # 수정할 값이 하나도 없는 경우
+        if not update_data:
+            raise ValueError("수정할 정보를 하나 이상 입력해주세요.")
+
+        # 휴대폰 번호가 전달된 경우 중복 확인
+        phone_number = update_data.get("phone_number")
+
+        if phone_number is not None:
+            duplicate_user = await self.repository.find_by_phone_number(
+                phone_number
+            )
+
+            if (
+                duplicate_user is not None
+                and duplicate_user.id != user.id
+            ):
+                raise ValueError("이미 사용 중인 휴대폰 번호입니다.")
+
+        # 전달된 항목만 DB에 반영
+        return await self.repository.update_profile(
+            user=user,
+            department=update_data.get("department"),
+            phone_number=phone_number,
+        )
 
     # 비밀번호 변경
     async def change_password(
