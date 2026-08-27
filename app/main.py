@@ -6,7 +6,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 
 # API router 가져오기
-from app.apis import auth, practice_apis, user
+from app.apis import auth, mypage, practice_apis, user
 
 
 app = FastAPI()
@@ -15,6 +15,7 @@ app = FastAPI()
 app.include_router(practice_apis.router)
 app.include_router(user.router)
 app.include_router(auth.router)
+app.include_router(mypage.router)
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
