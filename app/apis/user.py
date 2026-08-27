@@ -43,29 +43,6 @@ async def signup(
     }
 
 
-# 관리자 회원 목록 조회
-@router.get("")
-async def get_users(
-    current_admin: User = Depends(get_current_admin),
-    db: AsyncSession = Depends(async_get_db),
-):
-    repository = UserRepository(db)
-    users = await repository.get_all_users()
-
-    return [
-        {
-            "id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "department": user.department,
-            "gender": user.gender,
-            "phone_number": user.phone_number,
-            "is_active": user.is_active,
-        }
-        for user in users
-    ]
-
-
 # 비밀번호 변경
 @router.patch("/me/password")
 async def change_password(
