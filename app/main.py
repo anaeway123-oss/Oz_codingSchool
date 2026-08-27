@@ -6,13 +6,14 @@ from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 
 # 우리가 만든 practice API router 가져오기
-from app.apis import practice_apis
+from app.apis import practice_apis, user_list
 
 
 app = FastAPI()
 
 # practice_apis.py에서 만든 router를 FastAPI 앱에 등록
 app.include_router(practice_apis.router)
+app.include_router(user_list.router)
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
