@@ -5,7 +5,10 @@ from app.core.auth import get_current_user
 from app.core.db.databases import async_get_db
 from app.models.enums import Department, Role
 from app.models.user import User
-from app.schemas.medical_record import MedicalRecordCreateResponse
+from app.schemas.medical_record import (
+    MedicalRecordCreateResponse,
+    MedicalRecordDetailResponse,
+)
 from app.services.medical_record import (
     DuplicateChartNumberError,
     MedicalRecordService,
@@ -19,6 +22,7 @@ router = APIRouter(
 )
 
 
+# 진료기록 등록 + X-Ray 이미지 업로드
 @router.post(
     "/{patient_id}/medical-records",
     response_model=MedicalRecordCreateResponse,
@@ -81,3 +85,33 @@ async def create_medical_record(
         )
 
     return medical_record
+
+
+# 진료기록 상세 조회
+@router.get(
+    "/{patient_id}/medical-records/{record_id}",
+    response_model=MedicalRecordDetailResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def get_medical_record_detail(
+    patient_id: int,
+    record_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db),
+):
+    """
+    REQ-MDR-003 진료기록 상세 조회 API
+    """
+
+    service = MedicalRecordService(db)
+
+    try:
+        return await service.get_medical_record_detail(
+            patient_id=patient_id,
+            record_id=record_id,
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        )

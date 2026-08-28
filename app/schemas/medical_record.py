@@ -22,3 +22,14 @@ class MedicalRecordCreateResponse(BaseModel):
     symptoms: str
     created_at: datetime
     xray_images: list[XrayImageResponse]
+
+
+# 진료기록 상세 조회 응답 데이터
+class MedicalRecordDetailResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    chart_number: str
+    symptoms: str
+    xray_images: list[XrayImageResponse]
+    created_at: datetime

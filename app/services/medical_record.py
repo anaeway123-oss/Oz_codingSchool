@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.medical_record import MedicalRecord
 from app.models.xray_image import XrayImage
 from app.repositories.medical_record import MedicalRecordRepository
+from app.repositories.patient import PatientRepository
 
 
 # 프로젝트의 X-Ray 이미지 저장 위치
@@ -15,7 +16,6 @@ XRAY_DIR = BASE_DIR / "media" / "xrays"
 
 # 허용할 X-Ray 이미지 확장자
 ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
-
 
 
 class PatientNotFoundError(ValueError):
@@ -29,6 +29,7 @@ class DuplicateChartNumberError(ValueError):
 class MedicalRecordService:
     def __init__(self, session: AsyncSession):
         self.repository = MedicalRecordRepository(session)
+        self.patient_repository = PatientRepository(session)
 
     # 업로드된 X-Ray 파일 형식 확인
     @staticmethod
@@ -44,7 +45,6 @@ class MedicalRecordService:
             )
 
         return extension
-
 
     # X-Ray 이미지를 로컬 저장소에 저장
     @staticmethod
@@ -151,3 +151,23 @@ class MedicalRecordService:
 
             raise
 
+    # 진료기록 상세 조회
+    async def get_medical_record_detail(
+        self,
+        patient_id: int,
+        record_id: int,
+    ) -> MedicalRecord:
+        patient = await self.patient_repository.find_by_id(patient_id)
+
+        if patient is None:
+            raise ValueError("환자를 찾을 수 없습니다.")
+
+        medical_record = await self.repository.find_by_patient_and_record_id(
+            patient_id,
+            record_id,
+        )
+
+        if medical_record is None:
+            raise ValueError("진료기록을 찾을 수 없습니다.")
+
+        return medical_record
