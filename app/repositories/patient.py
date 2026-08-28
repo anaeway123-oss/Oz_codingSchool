@@ -1,7 +1,9 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.enums import Gender
+from app.models.medical_record import MedicalRecord
 from app.models.patient import Patient
 
 
@@ -16,6 +18,27 @@ class PatientRepository:
         )
 
         return result.scalar_one_or_none()
+
+    # 환자와 연결된 진료기록 및 X-Ray 조회
+    async def find_by_id_with_records(
+        self,
+        patient_id: int,
+    ) -> Patient | None:
+        result = await self.session.execute(
+            select(Patient)
+            .options(
+                selectinload(Patient.medical_records).selectinload(
+                    MedicalRecord.xray_images
+                )
+            )
+            .where(Patient.id == patient_id)
+        )
+
+        return result.scalar_one_or_none()
+
+    # 환자 삭제
+    async def delete(self, patient: Patient) -> None:
+        await self.session.delete(patient)
 
     # 새로운 환자 저장
     async def create(self, patient: Patient) -> Patient:
