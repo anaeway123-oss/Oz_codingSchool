@@ -6,7 +6,16 @@ from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 
 # API router 가져오기
-from app.apis import auth, mypage, practice_apis, user, user_delete, user_list
+from app.apis import (
+    auth,
+    medical_record,
+    mypage,
+    patient,
+    practice_apis,
+    user,
+    user_delete,
+    user_list,
+)
 
 
 app = FastAPI()
@@ -16,6 +25,8 @@ app.include_router(practice_apis.router)
 app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(mypage.router)
+app.include_router(patient.router)
+app.include_router(medical_record.router)
 app.include_router(user_delete.router)
 app.include_router(user_list.router)
 
