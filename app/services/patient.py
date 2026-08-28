@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.enums import Department, Role
+from app.models.enums import Department, Gender, Role
 from app.models.patient import Patient
 from app.models.user import User
 from app.repositories.patient import PatientRepository
@@ -71,3 +71,36 @@ class PatientService:
             raise ValueError("환자를 찾을 수 없습니다.")
 
         return patient
+
+    # 환자 목록 조회
+    async def get_patients(
+        self,
+        current_user: User,
+        name: str | None = None,
+        gender: Gender | None = None,
+        min_age: int | None = None,
+        max_age: int | None = None,
+    ) -> list[Patient]:
+        has_allowed_role = current_user.role in {Role.STAFF, Role.ADMIN}
+        has_allowed_department = current_user.department in {
+            Department.DEV,
+            Department.MEDICAL,
+            Department.RESEARCH,
+        }
+
+        if not (has_allowed_role and has_allowed_department):
+            raise PermissionError("환자 목록 조회 권한이 없습니다.")
+
+        if (
+            min_age is not None
+            and max_age is not None
+            and min_age > max_age
+        ):
+            raise ValueError("최소 나이는 최대 나이보다 클 수 없습니다.")
+
+        return await self.repository.find_all(
+            name=name,
+            gender=gender,
+            min_age=min_age,
+            max_age=max_age,
+        )
