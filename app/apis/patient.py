@@ -139,3 +139,36 @@ async def get_patient_detail(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(error),
         )
+
+
+# 환자 삭제
+@router.delete(
+    "/{patient_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_patient(
+    patient_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db),
+):
+    """
+    REQ-PTNT-005 환자 삭제 API
+    """
+
+    service = PatientService(db)
+
+    try:
+        await service.delete_patient(
+            patient_id=patient_id,
+            current_user=current_user,
+        )
+    except PermissionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(error),
+        )
+    except LookupError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        )

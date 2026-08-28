@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.enums import Department, Gender, Role
@@ -5,6 +7,11 @@ from app.models.patient import Patient
 from app.models.user import User
 from app.repositories.patient import PatientRepository
 from app.schemas.patient import PatientCreate, PatientUpdate
+
+
+# 프로젝트의 X-Ray 이미지 저장 위치
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+XRAY_DIR = BASE_DIR / "media" / "xrays"
 
 
 class PatientService:
@@ -71,6 +78,58 @@ class PatientService:
             raise ValueError("환자를 찾을 수 없습니다.")
 
         return patient
+
+    # 환자 삭제
+    async def delete_patient(
+        self,
+        patient_id: int,
+        current_user: User,
+    ) -> None:
+        has_allowed_role = current_user.role in {Role.STAFF, Role.ADMIN}
+        has_allowed_department = current_user.department in {
+            Department.DEV,
+            Department.MEDICAL,
+            Department.RESEARCH,
+        }
+
+        if not (has_allowed_role and has_allowed_department):
+            raise PermissionError("환자 삭제 권한이 없습니다.")
+
+        # 진료기록 및 X-Ray까지 함께 조회
+        patient = await self.repository.find_by_id_with_records(patient_id)
+
+        if patient is None:
+            raise LookupError("환자를 찾을 수 없습니다.")
+
+        # 삭제할 X-Ray 파일 경로를 먼저 확보
+        xray_file_paths: list[Path] = []
+
+        for medical_record in patient.medical_records:
+            for xray_image in medical_record.xray_images:
+                if xray_image.image_url.startswith("/media/"):
+                    relative_path = xray_image.image_url.removeprefix("/media/")
+                    file_path = BASE_DIR / "media" / relative_path
+                    xray_file_paths.append(file_path)
+
+        try:
+            # DB에서 환자 삭제 대상으로 지정
+            await self.repository.delete(patient)
+
+            # DB 삭제 확정
+            await self.repository.session.commit()
+
+        except Exception:
+            await self.repository.session.rollback()
+            raise
+
+        # DB 삭제가 성공한 후 실제 X-Ray 파일도 삭제
+        for file_path in xray_file_paths:
+            try:
+                file_path.unlink(missing_ok=True)
+            except OSError as error:
+                raise RuntimeError(
+                    "환자 삭제 후 X-Ray 이미지 파일 삭제에 실패했습니다."
+                ) from error
 
     # 환자 목록 조회
     async def get_patients(
