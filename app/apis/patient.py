@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.db.databases import async_get_db
+from app.models.enums import Gender
 from app.models.user import User
 from app.schemas.patient import (
     PatientCreate,
@@ -17,6 +18,40 @@ router = APIRouter(
     prefix="/patients",
     tags=["patients"],
 )
+
+# 환자 목록 조회
+@router.get(
+    "",
+    response_model=list[PatientResponse],
+)
+async def get_patients(
+    name: str | None = Query(default=None),
+    gender: Gender | None = Query(default=None),
+    min_age: int | None = Query(default=None, ge=0, le=150),
+    max_age: int | None = Query(default=None, ge=0, le=150),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db),
+):
+    service = PatientService(db)
+
+    try:
+        return await service.get_patients(
+            current_user=current_user,
+            name=name,
+            gender=gender,
+            min_age=min_age,
+            max_age=max_age,
+        )
+    except PermissionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(error),
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )
 
 
 # 환자 정보 등록
