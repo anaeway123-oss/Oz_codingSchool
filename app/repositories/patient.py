@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.patient import Patient
+from app.models.enums import Gender
 
 
 class PatientRepository:
@@ -41,3 +42,31 @@ class PatientRepository:
         await self.session.refresh(patient)
 
         return patient
+
+    # 환자 목록 조회 + 이름/성별/나이 범위 필터
+    async def find_all(
+        self,
+        name: str | None = None,
+        gender: Gender | None = None,
+        min_age: int | None = None,
+        max_age: int | None = None,
+    ) -> list[Patient]:
+        query = select(Patient)
+
+        if name:
+            query = query.where(Patient.name.ilike(f"%{name}%"))
+
+        if gender is not None:
+            query = query.where(Patient.gender == gender)
+
+        if min_age is not None:
+            query = query.where(Patient.age >= min_age)
+
+        if max_age is not None:
+            query = query.where(Patient.age <= max_age)
+
+        query = query.order_by(Patient.id)
+
+        result = await self.session.execute(query)
+
+        return list(result.scalars().all())
