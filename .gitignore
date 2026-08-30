@@ -21,3 +21,6 @@ envs/
 .env
 
 .python-version
+
+# Uploaded X-Ray images
+media/
