@@ -8,6 +8,7 @@ from app.models.user import User
 from app.schemas.medical_record import (
     MedicalRecordCreateResponse,
     MedicalRecordDetailResponse,
+    MedicalRecordListResponse,
 )
 from app.services.medical_record import (
     DuplicateChartNumberError,
@@ -85,6 +86,49 @@ async def create_medical_record(
         )
 
     return medical_record
+
+
+# 진료기록 목록 조회
+@router.get(
+    "/{patient_id}/medical-records",
+    response_model=list[MedicalRecordListResponse],
+    status_code=status.HTTP_200_OK,
+)
+async def get_medical_records(
+    patient_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db),
+):
+    """
+    REQ-MDR-002 진료기록 목록 조회 API
+    """
+
+    service = MedicalRecordService(db)
+
+    try:
+        medical_records = await service.get_medical_records(
+            patient_id=patient_id,
+        )
+    except PatientNotFoundError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        )
+
+    # 목록에서는 증상이 100자를 초과하면 생략해서 표시
+    return [
+        MedicalRecordListResponse(
+            id=medical_record.id,
+            chart_number=medical_record.chart_number,
+            symptoms=(
+                medical_record.symptoms[:100] + "..."
+                if len(medical_record.symptoms) > 100
+                else medical_record.symptoms
+            ),
+            created_at=medical_record.created_at,
+        )
+        for medical_record in medical_records
+    ]
 
 
 # 진료기록 상세 조회
