@@ -72,6 +72,19 @@ class MedicalRecordRepository:
 
         return result.scalar_one()
 
+    # 환자 ID로 진료기록 목록 조회
+    async def find_all_by_patient_id(
+        self,
+        patient_id: int,
+    ) -> list[MedicalRecord]:
+        result = await self.session.execute(
+            select(MedicalRecord)
+            .where(MedicalRecord.patient_id == patient_id)
+            .order_by(MedicalRecord.id)
+        )
+
+        return list(result.scalars().all())
+
     # 환자 ID와 진료기록 ID로 상세 조회
     async def find_by_patient_and_record_id(
         self,
