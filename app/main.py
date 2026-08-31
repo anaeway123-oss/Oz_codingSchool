@@ -11,6 +11,7 @@ from app.apis import (
     medical_record,
     mypage,
     patient,
+    prediction,
     practice_apis,
     user,
     user_delete,
@@ -27,6 +28,7 @@ app.include_router(auth.router)
 app.include_router(mypage.router)
 app.include_router(patient.router)
 app.include_router(medical_record.router)
+app.include_router(prediction.router)
 app.include_router(user_delete.router)
 app.include_router(user_list.router)
 
