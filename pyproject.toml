@@ -9,10 +9,13 @@ dependencies = [
     "asyncmy>=0.2.11",
     "cryptography>=46.0.6",
     "fastapi[standard]>=0.135.3",
+    "pillow>=12.3.0",
     "pwdlib[argon2]>=0.3.1",
     "pydantic-settings>=2.13.1",
     "pyjwt>=2.13.0",
     "python-multipart>=0.0.24",
     "sqlalchemy[asyncio]>=2.0.49",
+    "torch>=2.13.0",
+    "torchvision>=0.28.0",
     "uuid6>=2025.0.1",
 ]
