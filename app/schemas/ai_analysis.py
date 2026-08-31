@@ -1,12 +1,15 @@
-from typing import Literal
+from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PneumoniaPredictionResponse(BaseModel):
-    class_id: int = Field(ge=0, le=1)
-    label: Literal["NORMAL", "PNEUMONIA"]
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    record_id: int
     is_pneumonia: bool
     confidence: float = Field(ge=0.0, le=1.0)
-    normal_probability: float = Field(ge=0.0, le=1.0)
-    pneumonia_probability: float = Field(ge=0.0, le=1.0)
+    heatmap_url: str | None = None
+    ai_model: str
+    created_at: datetime
