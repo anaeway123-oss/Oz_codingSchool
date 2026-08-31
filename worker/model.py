@@ -165,6 +165,7 @@ def preprocess_image(image_path: str | Path) -> torch.Tensor:
 
 # 모델 출력 번호와 실제 클래스 이름의 대응 관계입니다.
 # 0번은 정상, 1번은 폐렴으로 해석합니다.
+MODEL_NAME = "SimpleCNN"
 CLASS_NAMES = ("NORMAL", "PNEUMONIA")
 
 
