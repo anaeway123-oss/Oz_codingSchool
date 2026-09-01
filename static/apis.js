@@ -52,7 +52,7 @@ const apis = {
 
                 this.isRefreshing = true;
                 try {
-                    const refreshResponse = await fetch(`${API_BASE}/users/refresh`, {
+                    const refreshResponse = await fetch(`${API_BASE}/auth/refresh`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' }
                     });
@@ -156,7 +156,7 @@ const apis = {
      * [NFR-USER-001] 로그인 성공 시 Access Token(JSON Body)과 Refresh Token(HTTP-only Cookie)이 발급된다.
      */
     async refresh() {
-        return await fetch(`${API_BASE}/users/refresh`, {
+        return await fetch(`${API_BASE}/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -267,8 +267,8 @@ const apis = {
      * 진료 기록 등록
      * [REQ-MDR-001] 사내 의료인 역할을 가진 유저만 환자의 진료 기록을 등록할 수 있다.
      */
-    async createMedicalRecord(formData) {
-        return await this.request('/medical-records', {
+    async createMedicalRecord(patientId, formData) {
+        return await this.request(`/patients/${patientId}/medical-records`, {
             method: 'POST',
             body: formData
         });
@@ -319,18 +319,18 @@ const apis = {
      */
     async adminGetUsers(params = {}) {
         const query = new URLSearchParams(params).toString();
-        return await this.request(`/admin/users${query ? `?${query}` : ''}`);
+        return await this.request(`/users${query ? `?${query}` : ''}`);
     },
 
     /**
      * 유저 권한 수정 (관리자 전용)
      * [REQ-USER-005] 관리자 권한을 가진 유저는 다른 유저의 권한을 수정할 수 있다.
      */
-    async adminUpdateUserRole(roleData) {
-        return await this.request('/admin/users/role', {
+    async adminUpdateUserRole(userId, role) {
+        return await this.request(`/users/${userId}/role`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(roleData)
+            body: JSON.stringify({ role })
         });
     }
 };

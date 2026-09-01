@@ -9,8 +9,8 @@
         <input type="text" id="search-name" placeholder="이름 검색" style="flex: 1; min-width: 150px;" onkeypress="if(event.key === 'Enter') pages.handleSearch()">
         <select id="filter-gender" style="width: 100px;" onchange="pages.handleSearch()">
             <option value="">성별 전체</option>
-            <option value="male">남성</option>
-            <option value="female">여성</option>
+            <option value="M">남성</option>
+            <option value="F">여성</option>
         </select>
         <input type="number" id="filter-min-age" placeholder="최소 나이" style="width: 80px;" onchange="pages.handleSearch()" onkeypress="if(event.key === 'Enter') pages.handleSearch()">
         <input type="number" id="filter-max-age" placeholder="최대 나이" style="width: 80px;" onchange="pages.handleSearch()" onkeypress="if(event.key === 'Enter') pages.handleSearch()">

@@ -7,9 +7,9 @@
         <input type="text" id="admin-search-query" placeholder="이름 또는 이메일 검색" style="flex: 1; min-width: 200px;" onkeypress="if(event.key === 'Enter') pages.handleAdminSearch()">
         <select id="admin-filter-dept" style="width: 150px;" onchange="pages.handleAdminSearch()">
             <option value="">부서 전체</option>
-            <option value="developer">개발자</option>
-            <option value="medical team">의료진</option>
-            <option value="researcher">연구진</option>
+            <option value="DEV">개발자</option>
+            <option value="MEDICAL">의료진</option>
+            <option value="RESEARCH">연구진</option>
         </select>
         <button onclick="pages.handleAdminSearch()">검색</button>
         <button class="secondary" onclick="pages.resetAdminSearch()">초기화</button>

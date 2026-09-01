@@ -12,7 +12,7 @@ const pages = {
         const actions = document.getElementById('home-actions');
         if (!state.user) {
             actions.innerHTML = '<button onclick="navigate(\'/login\')">로그인하여 시작하기</button>';
-        } else if (state.user.role === 'pending') {
+        } else if (state.user.role === 'PENDING') {
             actions.innerHTML = '<p>관리자의 승인을 기다리는 중입니다.</p>';
         } else {
             actions.innerHTML = '<button onclick="navigate(\'/patients\')">환자 목록 보기</button>';
@@ -198,7 +198,7 @@ const pages = {
         document.getElementById('me-email').innerText = state.user.email;
         document.getElementById('me-name-display').innerText = state.user.name;
         document.getElementById('me-department-display').innerText = state.user.department;
-        document.getElementById('me-gender-display').innerText = state.user.gender === 'male' ? '남성' : '여성';
+        document.getElementById('me-gender-display').innerText = state.user.gender === 'M' ? '남성' : '여성';
         document.getElementById('me-phone-display').innerText = utils.formatPhoneNumber(state.user.phone_number);
         document.getElementById('me-role-display').innerText = state.user.role;
 
@@ -244,9 +244,9 @@ const pages = {
                 <td>${utils.formatPhoneNumber(u.phone_number)}</td>
                 <td>
                     <select onchange="pages.handleRoleUpdate(${u.id}, this.value)" ${u.id === state.user.id ? 'disabled' : ''}>
-                        <option value="pending" ${u.role === 'pending' ? 'selected' : ''}>승인대기</option>
-                        <option value="staff" ${u.role === 'staff' ? 'selected' : ''}>일반회원</option>
-                        <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>관리자</option>
+                        <option value="PENDING" ${u.role === 'PENDING' ? 'selected' : ''}>승인대기</option>
+                        <option value="STAFF" ${u.role === 'STAFF' ? 'selected' : ''}>일반회원</option>
+                        <option value="ADMIN" ${u.role === 'ADMIN' ? 'selected' : ''}>관리자</option>
                     </select>
                 </td>
                 <td>${u.is_active ? '<span class="status-badge success">활성</span>' : '<span class="status-badge error">비활성</span>'}</td>
@@ -275,7 +275,7 @@ const pages = {
 
     async handleRoleUpdate(userId, newRole) {
         try {
-            await apis.adminUpdateUserRole({ user_id: userId, new_role: newRole });
+            await apis.adminUpdateUserRole(userId, newRole);
             utils.showAlert('권한이 변경되었습니다.', 'success');
             this.handleAdminSearch();
         } catch (err) {
@@ -416,7 +416,7 @@ const pages = {
         formData.append('xray_image', document.getElementById('xray_image').files[0]);
 
         try {
-            await apis.createMedicalRecord(formData);
+            await apis.createMedicalRecord(patientId, formData);
             utils.showAlert('진료 기록이 등록되었습니다.', 'success');
             navigate(`/patients/${patientId}`);
         } catch (err) {

@@ -71,7 +71,21 @@ class PatientService:
         )
 
     # 환자 정보 상세 조회
-    async def get_patient_detail(self, patient_id: int) -> Patient:
+    async def get_patient_detail(
+        self,
+        patient_id: int,
+        current_user: User,
+    ) -> Patient:
+        has_allowed_role = current_user.role in {Role.STAFF, Role.ADMIN}
+        has_allowed_department = current_user.department in {
+            Department.DEV,
+            Department.MEDICAL,
+            Department.RESEARCH,
+        }
+
+        if not (has_allowed_role and has_allowed_department):
+            raise PermissionError("환자 상세 조회 권한이 없습니다.")
+
         patient = await self.repository.find_by_id(patient_id)
 
         if patient is None:
