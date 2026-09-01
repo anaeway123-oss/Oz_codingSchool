@@ -30,7 +30,7 @@ const apis = {
             // 401 Unauthorized 처리 (토큰 만료 시 리프레시 시도)
             if (response.status === 401) {
                 // 로그인 요청에서 401은 리프레시 대상이 아님
-                if (url === '/users/login') {
+                if (url === '/auth/login') {
                     return { status: 401 };
                 }
                 
@@ -115,7 +115,7 @@ const apis = {
             if (response.status === 204) return null;
             return await response.json();
         } catch (err) {
-            if (url !== '/users/login' && !skipAlert) {
+            if (url !== '/auth/login' && !skipAlert) {
                 utils.showAlert(err.message, 'error', '오류');
             }
             throw err;
@@ -140,14 +140,16 @@ const apis = {
      * [REQ-USER-002] 가입된 이메일과 비밀번호로 로그인을 할 수 있다.
      */
     async login(email, password) {
-        const formData = new FormData();
-        formData.append('username', email);
-        formData.append('password', password);
-        return await this.request('/users/login', {
+        return await this.request('/auth/login', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
         }, true);
     },
+
 
     /**
      * 토큰 갱신
@@ -284,8 +286,8 @@ const apis = {
      * 진료 기록 상세 조회
      * [REQ-MDR-003] 특정 진료 기록의 상세 내용을 조회할 수 있다.
      */
-    async getMedicalRecord(recordId) {
-        return await this.request(`/medical-records/${recordId}`);
+    async getMedicalRecord(patientId, recordId) {
+        return await this.request(`/patients/${patientId}/medical-records/${recordId}`);
     },
 
     // --- AI Prediction ---

@@ -113,7 +113,7 @@ const pages = {
                 <td>${r.chart_number}</td>
                 <td>${r.symptoms}</td>
                 <td>${new Date(r.created_at).toLocaleString()}</td>
-                <td><button onclick="navigate('/medical-records/${r.id}')">상세보기</button></td>
+                <td><button onclick="navigate('/patients/${patientId}/medical-records/${r.id}')">상세보기</button></td>
             </tr>
         `).join('');
     },
@@ -143,9 +143,9 @@ const pages = {
         document.getElementById('cancel-btn').onclick = () => navigate(`/patients/${patientId}`);
     },
 
-    async renderRecordDetail(recordId) {
-        const record = await apis.getMedicalRecord(recordId);
-        const analyses = await apis.getMedicalRecordAnalyses(record.patient_id, recordId);
+    async renderRecordDetail(patientId, recordId) {
+        const record = await apis.getMedicalRecord(patientId, recordId);
+        const analyses = await apis.getMedicalRecordAnalyses(patientId, recordId);
         const html = await utils.loadTemplate('record-detail');
         const app = document.getElementById('app');
         app.innerHTML = html;
@@ -154,10 +154,11 @@ const pages = {
         document.getElementById('chart-number').innerText = record.chart_number;
         document.getElementById('symptoms-text').innerText = record.symptoms;
         document.getElementById('created-at').innerText = new Date(record.created_at).toLocaleString();
-        document.getElementById('xray-img').src = record.xray_image_url;
+        const xrayImage = record.xray_images?.[0];
+        document.getElementById('xray-img').src = xrayImage ? xrayImage.image_url : '';
         
-        document.getElementById('predict-btn').onclick = () => this.handlePredict(record.patient_id, recordId);
-        document.getElementById('back-to-patient-btn').onclick = () => navigate(`/patients/${record.patient_id}`);
+        document.getElementById('predict-btn').onclick = () => this.handlePredict(patientId, recordId);
+        document.getElementById('back-to-patient-btn').onclick = () => navigate(`/patients/${patientId}`);
         
         const analysisList = document.getElementById('analysis-list');
         if (analyses.length === 0) {
@@ -487,7 +488,7 @@ const pages = {
                 'success'
             );
 
-            navigate(`/medical-records/${recordId}`, false);
+            navigate(`/patients/${patientId}/medical-records/${recordId}`, false);
         } catch (err) {
             const errorMessages = {
                 403: 'AI 예측 기능을 사용할 권한이 없습니다.',
