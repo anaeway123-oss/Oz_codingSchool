@@ -167,7 +167,7 @@ const apis = {
      * [REQ-USER-003] 로그인된 사용자는 로그아웃을 할 수 있다.
      */
     async logout() {
-        return await this.request('/users/logout', { method: 'POST' });
+        return await this.request('/auth/logout', { method: 'POST' });
     },
 
     /**
