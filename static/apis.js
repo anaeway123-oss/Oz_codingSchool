@@ -3,7 +3,7 @@
  * 각 함수는 백엔드 API 명세의 요구사항 ID를 주석으로 포함합니다.
  */
 
-const API_BASE = '/api/v1';
+const API_BASE = '';
 
 const apis = {
     isRefreshing: false,
@@ -294,16 +294,19 @@ const apis = {
      * AI 폐렴 예측 수행
      * [REQ-PRED-001] 진료기록에 등록된 X-ray 이미지를 활용하여 폐렴 여부를 예측한다.
      */
-    async predictPneumonia(recordId) {
-        return await this.request(`/medical-records/${recordId}/predict`, { method: 'POST' });
+    async predictPneumonia(patientId, recordId) {
+        return await this.request(`/patients/${patientId}/medical-records/${recordId}/ai-predictions`,
+            { method: 'POST' },
+            true
+        );
     },
 
     /**
      * AI 예측 결과 목록 조회
      * [REQ-PRED-002] 특정 진료기록에 대해 수행된 모든 AI 예측 결과 목록을 조회한다.
      */
-    async getMedicalRecordAnalyses(recordId) {
-        return await this.request(`/medical-records/${recordId}/analyses`);
+    async getMedicalRecordAnalyses(patientId, recordId) {
+        return await this.request(`/patients/${patientId}/medical-records/${recordId}/ai-predictions`);
     },
 
     // --- Admin ---
