@@ -156,7 +156,8 @@ const pages = {
         document.getElementById('created-at').innerText = new Date(record.created_at).toLocaleString();
         document.getElementById('xray-img').src = record.xray_image_url;
         
-        document.getElementById('predict-btn').onclick = () => this.handlePredict(recordId);
+    document.getElementById('predict-btn').onclick = () =>
+    this.handlePredict(record.patient_id, recordId);
         document.getElementById('back-to-patient-btn').onclick = () => navigate(`/patients/${record.patient_id}`);
         
         const analysisList = document.getElementById('analysis-list');
@@ -469,13 +470,15 @@ const pages = {
         }
     },
 
-    async handlePredict(recordId) {
-        try {
-            await apis.predictPneumonia(recordId);
-            utils.showAlert('AI 예측이 완료되었습니다.', 'success');
-            navigate(`/medical-records/${recordId}`, false);
-        } catch (err) {
-            utils.showAlert(`AI 예측 실패: ${err.message}`, 'error');
+    async handlePredict(patientId, recordId) {
+    try {
+        await apis.predictPneumonia(patientId, recordId);
+        utils.showAlert('AI 예측이 완료되었습니다.', 'success');
+        navigate(`/medical-records/${recordId}`, false);
+    } catch (err) {
+        utils.showAlert(`AI 예측 실패: ${err.message}`, 'error');
+    }
+
         }
     }
 };
