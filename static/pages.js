@@ -62,8 +62,8 @@ const pages = {
                 <td>${p.id}</td>
                 <td>${p.name}</td>
                 <td>${p.age}</td>
-                <td>${p.gender === 'male' ? '남성' : '여성'}</td>
-                <td>${utils.formatPhoneNumber(p.phone_number)}</td>
+                <td>${p.gender === 'M' ? '남성' : '여성'}</td>
+                <td>${utils.formatPhoneNumber(p.phone)}</td>
                 <td><button onclick="navigate('/patients/${p.id}')">상세보기</button></td>
             </tr>
         `).join('');
@@ -88,12 +88,12 @@ const pages = {
         app.innerHTML = html;
         
         // 환자 정보 표시
-        document.getElementById('patient-name').innerText = `${patient.name} (${patient.gender === 'male' ? '남성' : '여성'})`;
-        document.getElementById('patient-info').innerText = `나이: ${patient.age}세 | 연락처: ${utils.formatPhoneNumber(patient.phone_number)}`;
+        document.getElementById('patient-name').innerText = `${patient.name} (${patient.gender === 'M' ? '남성' : '여성'})`;
+        document.getElementById('patient-info').innerText = `나이: ${patient.age}세 | 연락처: ${utils.formatPhoneNumber(patient.phone)}`;
         
         // 수정 폼 초기값 설정
         document.getElementById('update-name').value = patient.name;
-        document.getElementById('update-phone').value = utils.formatPhoneNumber(patient.phone_number);
+        document.getElementById('update-phone').value = utils.formatPhoneNumber(patient.phone);
         
         const updatePhoneInput = document.getElementById('update-phone');
         if (updatePhoneInput) {
@@ -374,7 +374,7 @@ const pages = {
             name: document.getElementById('name').value,
             age: parseInt(document.getElementById('age').value),
             gender: document.getElementById('gender').value,
-            phone_number: document.getElementById('phone_number').value.replace(/[^\d]/g, '')
+            phone: document.getElementById('phone_number').value.replace(/[^\d]/g, '')
         };
         
         try {
@@ -437,7 +437,7 @@ const pages = {
         const patientId = state.currentPatientId;
         const updateData = {
             name: document.getElementById('update-name').value,
-            phone_number: document.getElementById('update-phone').value.replace(/[^\d]/g, '')
+            phone: document.getElementById('update-phone').value.replace(/[^\d]/g, '')
         };
 
         try {
