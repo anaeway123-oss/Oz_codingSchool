@@ -169,12 +169,17 @@ async function navigate(path, pushState = true) {
             pages.renderMyPage();
         } else if (pathname === '/admin/users') {
             await pages.renderAdminUsers(searchParams);
+        } else if (
+            pathname.startsWith('/patients/') &&
+            pathname.includes('/medical-records/')
+        ) {
+            const parts = pathname.split('/');
+            const patientId = parts[2];
+            const recordId = parts[4];
+            await pages.renderRecordDetail(patientId, recordId);
         } else if (pathname.startsWith('/patients/')) {
             const patientId = pathname.split('/')[2];
             await pages.renderPatientDetail(patientId);
-        } else if (pathname.startsWith('/medical-records/')) {
-            const recordId = pathname.split('/')[2];
-            await pages.renderRecordDetail(recordId);
         } else {
             app.innerHTML = '<div class="card"><h2>404</h2><p>페이지를 찾을 수 없습니다.</p></div>';
         }
