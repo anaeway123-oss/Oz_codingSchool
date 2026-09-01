@@ -294,9 +294,12 @@ const apis = {
      * AI 폐렴 예측 수행
      * [REQ-PRED-001] 진료기록에 등록된 X-ray 이미지를 활용하여 폐렴 여부를 예측한다.
      */
-    async predictPneumonia(recordId) {
-        return await this.request(`/medical-records/${recordId}/predict`, { method: 'POST' });
-    },
+    async predictPneumonia(patientId, recordId) {
+    return await this.request(
+        `/patients/${patientId}/medical-records/${recordId}/prediction`,
+        { method: 'POST' }
+    );
+},
 
     /**
      * AI 예측 결과 목록 조회
