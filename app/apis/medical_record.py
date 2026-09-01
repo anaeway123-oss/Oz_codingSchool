@@ -103,6 +103,20 @@ async def get_medical_records(
     REQ-MDR-002 진료기록 목록 조회 API
     """
 
+    # 승인된 사내 구성원만 진료기록 목록 조회 가능
+    has_allowed_role = current_user.role in {Role.STAFF, Role.ADMIN}
+    has_allowed_department = current_user.department in {
+        Department.DEV,
+        Department.MEDICAL,
+        Department.RESEARCH,
+    }
+
+    if not (has_allowed_role and has_allowed_department):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="진료기록 목록 조회 권한이 없습니다.",
+        )
+
     service = MedicalRecordService(db)
 
     try:
@@ -146,6 +160,20 @@ async def get_medical_record_detail(
     """
     REQ-MDR-003 진료기록 상세 조회 API
     """
+
+    # 승인된 사내 구성원만 진료기록 상세 조회 가능
+    has_allowed_role = current_user.role in {Role.STAFF, Role.ADMIN}
+    has_allowed_department = current_user.department in {
+        Department.DEV,
+        Department.MEDICAL,
+        Department.RESEARCH,
+    }
+
+    if not (has_allowed_role and has_allowed_department):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="진료기록 상세 조회 권한이 없습니다.",
+        )
 
     service = MedicalRecordService(db)
 

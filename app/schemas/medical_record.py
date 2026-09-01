@@ -39,6 +39,7 @@ class MedicalRecordDetailResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    patient_id: int
     chart_number: str
     symptoms: str
     xray_images: list[XrayImageResponse]

@@ -14,6 +14,7 @@ from app.schemas.user import (
     UserLogin,
     UserPasswordUpdate,
     UserProfileUpdate,
+    UserRoleUpdate,
 )
 
 password_hash = PasswordHash.recommended()
@@ -25,10 +26,13 @@ class UserService:
 
     # 회원가입
     async def create_user(self, user_data: UserCreate) -> User:
+        # 휴대폰 번호는 하이픈을 제거한 형태로 통일
+        phone_number = user_data.phone_number.replace("-", "")
+
         # 이메일 또는 휴대폰 번호 중복 확인
         duplicate_user = await self.repository.find_duplicate(
             email=user_data.email,
-            phone_number=user_data.phone_number,
+            phone_number=phone_number,
         )
 
         if duplicate_user is not None:
@@ -44,7 +48,7 @@ class UserService:
             name=user_data.name,
             department=user_data.department,
             gender=user_data.gender,
-            phone_number=user_data.phone_number,
+            phone_number=phone_number,
             role=Role.PENDING,
         )
 
@@ -96,14 +100,15 @@ class UserService:
         phone_number = update_data.get("phone_number")
 
         if phone_number is not None:
-            duplicate_user = await self.repository.find_by_phone_number(
-                phone_number
+            # 휴대폰 번호는 하이픈을 제거한 형태로 통일
+            phone_number = phone_number.replace("-", "")
+
+            duplicate_user = await self.repository.find_other_by_phone_number(
+                phone_number=phone_number,
+                exclude_user_id=user.id,
             )
 
-            if (
-                duplicate_user is not None
-                and duplicate_user.id != user.id
-            ):
+            if duplicate_user is not None:
                 raise ValueError("이미 사용 중인 휴대폰 번호입니다.")
 
         # 전달된 항목만 DB에 반영
@@ -135,4 +140,20 @@ class UserService:
         return await self.repository.update_password(
             user,
             new_hashed_password,
+        )
+
+    # 회원 권한 변경
+    async def update_role(
+        self,
+        user_id: int,
+        role_data: UserRoleUpdate,
+    ) -> User:
+        user = await self.repository.find_by_id(user_id)
+
+        if user is None:
+            raise ValueError("대상 사용자를 찾을 수 없습니다.")
+
+        return await self.repository.update_role(
+            user=user,
+            role=role_data.role,
         )

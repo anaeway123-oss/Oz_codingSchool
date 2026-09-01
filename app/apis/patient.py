@@ -133,7 +133,15 @@ async def get_patient_detail(
     service = PatientService(db)
 
     try:
-        return await service.get_patient_detail(patient_id)
+        return await service.get_patient_detail(
+            patient_id=patient_id,
+            current_user=current_user,
+        )
+    except PermissionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(error),
+        )
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

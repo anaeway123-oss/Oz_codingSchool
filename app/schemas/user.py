@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from app.models.enums import Department, Gender
+from app.models.enums import Department, Gender, Role
 
 
 # 회원가입 요청 데이터
@@ -34,3 +34,7 @@ class UserProfileUpdate(BaseModel):
         max_length=20,
         pattern=r"^01[016789]-?\d{3,4}-?\d{4}$",
     )
+
+# 회원 권한 변경 요청 데이터
+class UserRoleUpdate(BaseModel):
+    role: Role
