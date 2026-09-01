@@ -145,7 +145,7 @@ const pages = {
 
     async renderRecordDetail(recordId) {
         const record = await apis.getMedicalRecord(recordId);
-        const analyses = await apis.getMedicalRecordAnalyses(recordId);
+        const analyses = await apis.getMedicalRecordAnalyses(record.patient_id, recordId);
         const html = await utils.loadTemplate('record-detail');
         const app = document.getElementById('app');
         app.innerHTML = html;
@@ -156,7 +156,7 @@ const pages = {
         document.getElementById('created-at').innerText = new Date(record.created_at).toLocaleString();
         document.getElementById('xray-img').src = record.xray_image_url;
         
-        document.getElementById('predict-btn').onclick = () => this.handlePredict(recordId);
+        document.getElementById('predict-btn').onclick = () => this.handlePredict(record.patient_id, recordId);
         document.getElementById('back-to-patient-btn').onclick = () => navigate(`/patients/${record.patient_id}`);
         
         const analysisList = document.getElementById('analysis-list');
@@ -178,7 +178,7 @@ const pages = {
                             <tr class="${a.is_pneumonia ? 'result-positive' : 'result-negative'}">
                                 <td>${new Date(a.created_at).toLocaleString()}</td>
                                 <td><strong>${a.is_pneumonia ? 'Positive' : 'Negative'}</strong></td>
-                                <td>${a.confidence}%</td>
+                                <td>${(a.confidence * 100).toFixed(2)}%</td>
                                 <td>${a.ai_model}</td>
                             </tr>
                         `).join('')}
@@ -469,13 +469,38 @@ const pages = {
         }
     },
 
-    async handlePredict(recordId) {
+    async handlePredict(patientId, recordId) {
         try {
-            await apis.predictPneumonia(recordId);
-            utils.showAlert('AI 예측이 완료되었습니다.', 'success');
+            const prediction = await apis.predictPneumonia(
+                patientId,
+                recordId
+            );
+            if (!prediction) return;
+
+            const resultText = prediction.is_pneumonia ? '폐렴' : '정상';
+            const confidencePercent = (
+                prediction.confidence * 100
+            ).toFixed(2);
+
+            utils.showAlert(
+                `AI 예측 완료: ${resultText} (신뢰도 ${confidencePercent}%)`,
+                'success'
+            );
+
             navigate(`/medical-records/${recordId}`, false);
         } catch (err) {
-            utils.showAlert(`AI 예측 실패: ${err.message}`, 'error');
+            const errorMessages = {
+                403: 'AI 예측 기능을 사용할 권한이 없습니다.',
+                404: '환자, 진료기록 또는 X-ray 파일을 찾을 수 없습니다.',
+                503: 'AI 예측 모델을 현재 사용할 수 없습니다. 잠시 후 다시 시도해주세요.'
+            };
+
+            const message =
+                errorMessages[err.status]
+                || err.message
+                || 'AI 예측 중 알 수 없는 오류가 발생했습니다.';
+
+            utils.showAlert(`AI 예측 실패: ${message}`, 'error');
         }
     }
 };
