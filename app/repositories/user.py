@@ -1,7 +1,7 @@
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.enums import Department
+from app.models.enums import Department, Role
 from app.models.user import User
 
 
@@ -15,16 +15,18 @@ class UserRepository:
         email: str,
         phone_number: str,
     ) -> User | None:
+        normalized_phone = phone_number.replace("-", "")
+
         result = await self.session.execute(
             select(User).where(
                 or_(
                     User.email == email,
-                    User.phone_number == phone_number,
+                    func.replace(User.phone_number, "-", "") == normalized_phone,
                 )
             )
         )
 
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     # 이메일로 사용자 조회
     async def find_by_email(self, email: str) -> User | None:
@@ -42,16 +44,22 @@ class UserRepository:
 
         return result.scalar_one_or_none()
 
-    # 휴대폰 번호로 사용자 조회
-    async def find_by_phone_number(
+    # 현재 사용자를 제외하고 같은 휴대폰 번호를 가진 사용자 조회
+    async def find_other_by_phone_number(
         self,
         phone_number: str,
+        exclude_user_id: int,
     ) -> User | None:
+        normalized_phone = phone_number.replace("-", "")
+
         result = await self.session.execute(
-            select(User).where(User.phone_number == phone_number)
+            select(User).where(
+                func.replace(User.phone_number, "-", "") == normalized_phone,
+                User.id != exclude_user_id,
+            )
         )
 
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     # 전체 사용자 조회
     async def get_all_users(self) -> list[User]:
@@ -87,6 +95,20 @@ class UserRepository:
         hashed_password: str,
     ) -> User:
         user.hashed_password = hashed_password
+
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
+
+
+    # 회원 권한 변경
+    async def update_role(
+        self,
+        user: User,
+        role: Role,
+    ) -> User:
+        user.role = role
 
         await self.session.commit()
         await self.session.refresh(user)

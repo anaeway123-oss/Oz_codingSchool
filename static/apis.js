@@ -3,7 +3,7 @@
  * 각 함수는 백엔드 API 명세의 요구사항 ID를 주석으로 포함합니다.
  */
 
-const API_BASE = '/api/v1';
+const API_BASE = '';
 
 const apis = {
     isRefreshing: false,
@@ -30,7 +30,7 @@ const apis = {
             // 401 Unauthorized 처리 (토큰 만료 시 리프레시 시도)
             if (response.status === 401) {
                 // 로그인 요청에서 401은 리프레시 대상이 아님
-                if (url === '/users/login') {
+                if (url === '/auth/login') {
                     return { status: 401 };
                 }
                 
@@ -52,7 +52,7 @@ const apis = {
 
                 this.isRefreshing = true;
                 try {
-                    const refreshResponse = await fetch(`${API_BASE}/users/refresh`, {
+                    const refreshResponse = await fetch(`${API_BASE}/auth/refresh`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' }
                     });
@@ -115,7 +115,7 @@ const apis = {
             if (response.status === 204) return null;
             return await response.json();
         } catch (err) {
-            if (url !== '/users/login' && !skipAlert) {
+            if (url !== '/auth/login' && !skipAlert) {
                 utils.showAlert(err.message, 'error', '오류');
             }
             throw err;
@@ -140,21 +140,23 @@ const apis = {
      * [REQ-USER-002] 가입된 이메일과 비밀번호로 로그인을 할 수 있다.
      */
     async login(email, password) {
-        const formData = new FormData();
-        formData.append('username', email);
-        formData.append('password', password);
-        return await this.request('/users/login', {
+        return await this.request('/auth/login', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
         }, true);
     },
+
 
     /**
      * 토큰 갱신
      * [NFR-USER-001] 로그인 성공 시 Access Token(JSON Body)과 Refresh Token(HTTP-only Cookie)이 발급된다.
      */
     async refresh() {
-        return await fetch(`${API_BASE}/users/refresh`, {
+        return await fetch(`${API_BASE}/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -165,7 +167,7 @@ const apis = {
      * [REQ-USER-003] 로그인된 사용자는 로그아웃을 할 수 있다.
      */
     async logout() {
-        return await this.request('/users/logout', { method: 'POST' });
+        return await this.request('/auth/logout', { method: 'POST' });
     },
 
     /**
@@ -265,8 +267,8 @@ const apis = {
      * 진료 기록 등록
      * [REQ-MDR-001] 사내 의료인 역할을 가진 유저만 환자의 진료 기록을 등록할 수 있다.
      */
-    async createMedicalRecord(formData) {
-        return await this.request('/medical-records', {
+    async createMedicalRecord(patientId, formData) {
+        return await this.request(`/patients/${patientId}/medical-records`, {
             method: 'POST',
             body: formData
         });
@@ -284,8 +286,8 @@ const apis = {
      * 진료 기록 상세 조회
      * [REQ-MDR-003] 특정 진료 기록의 상세 내용을 조회할 수 있다.
      */
-    async getMedicalRecord(recordId) {
-        return await this.request(`/medical-records/${recordId}`);
+    async getMedicalRecord(patientId, recordId) {
+        return await this.request(`/patients/${patientId}/medical-records/${recordId}`);
     },
 
     // --- AI Prediction ---
@@ -294,16 +296,19 @@ const apis = {
      * AI 폐렴 예측 수행
      * [REQ-PRED-001] 진료기록에 등록된 X-ray 이미지를 활용하여 폐렴 여부를 예측한다.
      */
-    async predictPneumonia(recordId) {
-        return await this.request(`/medical-records/${recordId}/predict`, { method: 'POST' });
+    async predictPneumonia(patientId, recordId) {
+        return await this.request(`/patients/${patientId}/medical-records/${recordId}/ai-predictions`,
+            { method: 'POST' },
+            true
+        );
     },
 
     /**
      * AI 예측 결과 목록 조회
      * [REQ-PRED-002] 특정 진료기록에 대해 수행된 모든 AI 예측 결과 목록을 조회한다.
      */
-    async getMedicalRecordAnalyses(recordId) {
-        return await this.request(`/medical-records/${recordId}/analyses`);
+    async getMedicalRecordAnalyses(patientId, recordId) {
+        return await this.request(`/patients/${patientId}/medical-records/${recordId}/ai-predictions`);
     },
 
     // --- Admin ---
@@ -314,18 +319,18 @@ const apis = {
      */
     async adminGetUsers(params = {}) {
         const query = new URLSearchParams(params).toString();
-        return await this.request(`/admin/users${query ? `?${query}` : ''}`);
+        return await this.request(`/users${query ? `?${query}` : ''}`);
     },
 
     /**
      * 유저 권한 수정 (관리자 전용)
      * [REQ-USER-005] 관리자 권한을 가진 유저는 다른 유저의 권한을 수정할 수 있다.
      */
-    async adminUpdateUserRole(roleData) {
-        return await this.request('/admin/users/role', {
+    async adminUpdateUserRole(userId, role) {
+        return await this.request(`/users/${userId}/role`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(roleData)
+            body: JSON.stringify({ role })
         });
     }
 };
