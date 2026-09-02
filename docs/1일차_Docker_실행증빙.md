@@ -163,9 +163,9 @@ Uvicorn 서버가 정상적으로 시작되는 것을 확인했습니다.
 - [x] FastAPI / MySQL 연결 확인
 - [x] Swagger 회원가입 API `201 Created` 확인
 - [x] 컨테이너 시작 시 Alembic 자동 마이그레이션 실행 확인
-- [ ] 최종 실행 증빙 이미지 추가
+- [x] 최종 실행 증빙 이미지 추가
 
 Docker 1일차의 Docker 이미지 빌드, FastAPI / MySQL 컨테이너 실행,
 DB 마이그레이션 및 실제 API 연동 테스트까지 최종 확인했습니다.
 
-최종 실행 증빙 이미지는 추가 확인 후 `docs/images`에 정리할 예정입니다.
+최종 실행 증빙 이미지를 `docs/images`에 추가하여 Docker 1일차 실행 결과를 최종 정리했습니다.
