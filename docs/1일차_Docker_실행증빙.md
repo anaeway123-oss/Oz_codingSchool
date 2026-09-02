@@ -74,8 +74,20 @@ Alembic 마이그레이션 적용 후 다음 테이블이 생성된 것도 확�
 `app/Dockerfile`을 기반으로 FastAPI Docker 이미지를 빌드했으며
 정상적으로 빌드가 완료되었습니다.
 
+### FastAPI Docker 이미지 빌드 성공 화면
+
+![FastAPI Docker 이미지 빌드 성공](./images/docker_day1_fastapi_build_success.png)
+
+`docker compose build fastapi` 실행 결과 FastAPI Docker 이미지가 정상적으로 빌드되었음을 확인했습니다.
+
 Docker Compose를 통해 FastAPI와 MySQL 컨테이너를 함께 실행한 결과
 두 컨테이너 모두 `healthy` 상태임을 확인했습니다.
+
+### FastAPI / MySQL 동시 실행 화면
+
+![FastAPI와 MySQL 컨테이너 healthy 상태](./images/docker_day1_compose_ps_healthy.png)
+
+`docker compose ps` 실행 결과 FastAPI와 MySQL 컨테이너가 모두 `Up (healthy)` 상태로 정상 실행 중임을 확인했습니다.
 
 FastAPI의 `/healthcheck` 엔드포인트를 호출한 결과
 다음과 같이 정상 응답을 확인했습니다.
