@@ -67,6 +67,9 @@ Alembic 마이그레이션 적용 후 다음 테이블이 생성된 것도 확�
 
 ![MySQL 컨테이너 healthy 상태](./images/docker_day1_mysql_healthy.png)
 
+MySQL 담당 작업 단계에서 컨테이너가 `healthy` 상태로 정상 실행되는 것을 확인했습니다.
+이후 최종 통합 단계에서는 FastAPI와 MySQL을 함께 실행하여 전체 Docker Compose 구성을 추가 검증했습니다.
+
 ---
 
 ## 4. FastAPI 컨테이너 및 MySQL 연동 확인
