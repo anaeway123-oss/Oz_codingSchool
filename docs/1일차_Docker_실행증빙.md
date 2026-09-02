@@ -2,11 +2,11 @@
 
 ## 1. 작업 개요
 
-Docker 웹 서비스 배포 1일차에서 `app/.dockerignore` 작성 및 Docker 실행 증빙 정리를 담당합니다.
+Docker 웹 서비스 배포 1일차에서 `.dockerignore` 작성 및 Docker 실행 증빙 정리를 담당합니다.
 
 주요 확인 항목은 다음과 같습니다.
 
-- `app/.dockerignore` 작성 및 제외 대상 검토
+- `.dockerignore` 작성 및 제외 대상 검토
 - Docker 이미지 빌드 성공 여부 확인
 - FastAPI 컨테이너 실행 여부 확인
 - MySQL 컨테이너 실행 및 health 상태 확인
@@ -14,9 +14,9 @@ Docker 웹 서비스 배포 1일차에서 `app/.dockerignore` 작성 및 Docker 
 
 ---
 
-## 2. app/.dockerignore 작성
+## 2. .dockerignore 작성
 
-Docker 이미지에 불필요하거나 포함하면 안 되는 파일을 제외하기 위해 `app/.dockerignore`를 작성했습니다.
+Docker 이미지에 불필요하거나 포함하면 안 되는 파일을 제외하기 위해 `.dockerignore`를 작성했습니다.
 
 주요 제외 대상:
 
@@ -70,7 +70,7 @@ MySQL 컨테이너가 정상 실행 중이며 health check도 통과한 상태�
 
 ## 5. 현재 진행 상태
 
-- [x] `app/.dockerignore` 작성
+- [x] `.dockerignore` 작성
 - [x] 민감 파일 및 불필요 파일 제외 규칙 확인
 - [x] 실행에 필요한 애플리케이션 파일 제외 여부 확인
 - [x] MySQL 컨테이너 실행 및 healthy 상태 확인
