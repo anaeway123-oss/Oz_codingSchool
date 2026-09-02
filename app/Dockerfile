@@ -24,6 +24,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 # 7. 애플리케이션 코드 복사
 COPY app/ ./app
 COPY static/ ./static
+COPY alembic.ini ./
+COPY alembic/ ./alembic/
 
 # 8. 컨테이너 기본 실행 포트 및 명령 설정
 EXPOSE 8000

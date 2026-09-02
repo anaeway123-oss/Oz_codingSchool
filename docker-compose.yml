@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: app/Dockerfile
-    entrypoint: sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    entrypoint: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
       - "8000:8000"
     environment:
@@ -14,7 +14,7 @@ services:
       DB_NAME: ${DB_NAME}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     volumes:
-      - ./app:/app
+      - ./app:/app/app
       - static_volume:/app/static
       - media_volume:/app/media
     healthcheck:
