@@ -13,6 +13,10 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_DB: "0"
+      REDIS_RESULT_TIMEOUT_SECONDS: "30"
     volumes:
       - ./app:/app/app
       - static_volume:/app/static
@@ -24,7 +28,9 @@ services:
       retries: 3
     depends_on:
       mysql:
-       condition: service_healthy
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   mysql:
     image: mysql:8.0

@@ -3,6 +3,10 @@ from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.redis_client import (
+    create_task_id,
+    enqueue_prediction_and_wait,
+)
 from app.models.ai_analysis_result import AiAnalysisResult
 from app.repositories.ai_analysis_result import AiAnalysisResultRepository
 from app.services.medical_record import MedicalRecordService
@@ -18,11 +22,6 @@ class XrayNotFoundError(ValueError):
 
 class XrayFileNotFoundError(FileNotFoundError):
     pass
-
-
-class PredictionModelUnavailableError(RuntimeError):
-    pass
-
 
 class PredictionIntegrationService:
     def __init__(self, session: AsyncSession):
@@ -72,18 +71,22 @@ class PredictionIntegrationService:
                 "저장된 X-Ray 이미지 파일을 찾을 수 없습니다."
             )
 
-        # 5. 실제 예측이 필요할 때 AI 모델 불러오기
-        try:
-            from worker.model import predict_pneumonia
-        except (ImportError, ModuleNotFoundError) as error:
-            raise PredictionModelUnavailableError(
-                "폐렴 예측 모델을 불러올 수 없습니다."
-            ) from error
+        # 5. 동시에 들어온 요청과 결과를 구분할 고유 작업 ID 생성
+        task_id = create_task_id()
 
-        # 6. SimpleCNN으로 폐렴 예측
-        prediction = predict_pneumonia(image_path)
+        # 6. AI Worker가 예측에 사용할 작업 데이터 생성
+        task_data = {
+            "task_id": task_id,
+            "patient_id": patient_id,
+            "record_id": record_id,
+            "image_path": str(image_path),
+            "ai_model": AI_MODEL_NAME,
+        }
 
-        # 7. 새로운 예측 결과 생성
+        # 7. Redis Queue에 작업을 넣고 Worker의 Pub/Sub 결과 대기
+        prediction = await enqueue_prediction_and_wait(task_data)
+
+        # 8. 새로운 예측 결과 생성
         analysis_result = AiAnalysisResult(
             record_id=record_id,
             is_pneumonia=bool(prediction["is_pneumonia"]),
@@ -94,7 +97,7 @@ class PredictionIntegrationService:
             ai_model=AI_MODEL_NAME,
         )
 
-        # 8. DB에 저장
+        # 9. DB에 저장
         self.analysis_repository.add(analysis_result)
 
         try:

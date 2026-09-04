@@ -1,14 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from redis.exceptions import RedisError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.db.databases import async_get_db
+from app.core.redis_client import (
+    PredictionResultTimeoutError,
+    PredictionWorkerError,
+)
+
 from app.models.enums import Role
 from app.models.user import User
 from app.schemas.ai_analysis import PneumoniaPredictionResponse
 from app.services.prediction import (
     PredictionIntegrationService,
-    PredictionModelUnavailableError,
     XrayFileNotFoundError,
     XrayNotFoundError,
 )
@@ -63,7 +68,13 @@ async def predict_pneumonia_api(
             detail=str(error),
         )
 
-    except PredictionModelUnavailableError as error:
+    except PredictionResultTimeoutError as error:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail=str(error),
+        )
+
+    except (RedisError, PredictionWorkerError) as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(error),
