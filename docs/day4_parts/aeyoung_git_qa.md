@@ -99,7 +99,7 @@ Docker 4일차는 새 기능 구현보다 문서 정리가 중심이므로
 
 ## 확인 및 테스트 결과
 
-- Docker 1~3일차 작업에서 feature → integration → main 흐름을 실제로 사용했습니다.
+- Docker 작업에서는 feature → integration → main 흐름을 중심으로 협업했습니다.
 - Docker 3일차의 팀원 PR과 최종 통합 PR을 확인한 뒤 `main`까지 Merge했습니다.
 - Docker 4일차용 `integration/day4-readme-merge` 브랜치를 최신 `main`에서 생성했습니다.
 - 현재 애영님 개인 브랜치 `feature/day4-aeyoung-git-qa`에서 이 초안을 작성하고 있습니다.
