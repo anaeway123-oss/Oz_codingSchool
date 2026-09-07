@@ -113,8 +113,64 @@ Docker 4일차는 새 기능 구현보다 문서 정리가 중심이므로
 
 # 10. QA
 
-팀원별 4일차 초안과 테스트 근거가 `integration/day4-readme-merge`에 모두 모인 뒤
-애영님이 실제 확인된 결과만 취합하여 최종 작성할 예정입니다.
+Docker 4일차 최종 통합 단계에서 팀원별 작성 내용과 기존 구현 결과를 기준으로
+로컬 Docker 환경에서 주요 서비스와 AI 예측 전체 흐름을 최종 확인했습니다.
 
-현재는 아직 팀원 초안이 모두 작성되기 전이므로
-확인하지 않은 내용을 임의로 작성하지 않습니다.
+## QA 진행 내용
+
+1. Docker 서비스 상태 확인
+   - FastAPI, MySQL, Redis, AI Worker 컨테이너가 정상 실행되는 것을 확인했습니다.
+   - FastAPI, MySQL, Redis의 정상 상태를 확인했습니다.
+
+2. Swagger 및 인증 확인
+   - `http://127.0.0.1:8000/docs` Swagger UI가 정상적으로 열리는 것을 확인했습니다.
+   - Docker 환경의 MySQL은 9월 2일 생성된 별도 volume을 사용하고 있어,
+     이전 API 실습에서 사용했던 테스트 계정이 현재 Docker DB에는 존재하지 않음을 확인했습니다.
+   - QA용 의료 실무진 계정을 회원가입한 뒤 로컬 QA 환경에서 STAFF 권한을 설정했습니다.
+   - `POST /auth/login` 요청이 `200 OK`로 정상 동작하는 것을 확인했습니다.
+
+3. 환자 및 진료기록 생성 확인
+   - 인증된 STAFF / MEDICAL 계정으로 환자 목록 조회가 `200 OK`로 동작함을 확인했습니다.
+   - QA용 환자 생성 요청이 `201 Created`로 정상 처리됨을 확인했습니다.
+   - 흉부 X-ray PNG 파일을 포함한 진료기록 생성 요청이 `201 Created`로 처리되고,
+     X-ray 이미지 경로가 함께 저장되는 것을 확인했습니다.
+
+4. AI 폐렴 예측 및 결과 저장 확인
+   - 생성된 환자와 진료기록을 대상으로 AI 폐렴 예측 API를 실행했습니다.
+   - `POST /patients/{patient_id}/medical-records/{record_id}/ai-predictions`
+     요청이 `200 OK`로 정상 처리됨을 확인했습니다.
+   - SimpleCNN 모델의 폐렴 예측 결과가 반환되었으며,
+     `is_pneumonia`, `confidence`, `ai_model`, `created_at` 등의 값이 정상 응답되는 것을 확인했습니다.
+   - 이번 구현 범위에서 Heatmap은 사용하지 않으므로 `heatmap_url`은 `null`로 반환됨을 확인했습니다.
+
+5. DB 저장 및 조회 확인
+   - `GET /patients/{patient_id}/medical-records/{record_id}/ai-predictions`
+     요청을 통해 직전에 생성된 AI 예측 결과가 DB에서 정상 조회되는 것을 확인했습니다.
+   - POST 예측 결과와 GET 조회 결과의 `id`, `record_id`, 예측값 및 생성 시간이 동일함을 확인했습니다.
+
+6. 동일 요청 캐시 동작 확인
+   - 동일한 환자와 진료기록에 AI 예측 POST 요청을 다시 실행했습니다.
+   - 새로운 결과가 추가 생성되지 않고 기존 결과의 동일한 `id`와 `created_at`이 반환되는 것을 확인했습니다.
+   - 이를 통해 동일 진료기록의 기존 AI 예측 결과를 재사용하는 흐름이 정상 동작함을 확인했습니다.
+
+## 최종 QA 결과
+
+- Docker 서비스 실행: PASS
+- Swagger API 접근: PASS
+- 회원가입 및 로그인: PASS
+- 환자 생성: PASS
+- X-ray 포함 진료기록 생성: PASS
+- AI 폐렴 예측: PASS
+- AI 예측 결과 DB 저장 및 조회: PASS
+- 동일 요청 기존 결과 재사용: PASS
+
+Docker 3일차에서 확인했던
+`Redis Queue → AI Worker → SimpleCNN → Redis Pub/Sub` 흐름과 함께,
+이번 최종 QA에서는 실제 HTTP 요청부터 AI 예측 결과 저장, 조회 및 재사용까지의
+전체 서비스 흐름이 정상적으로 연결되는 것을 확인했습니다.
+
+## 한 줄 회고
+
+각 기능을 개별적으로 구현하는 것뿐 아니라 실제 사용자 요청부터 AI 예측,
+DB 저장과 재조회까지 전체 흐름을 직접 검증하면서
+통합 QA의 중요성과 문제 원인을 단계적으로 좁혀가는 방법을 배웠습니다.
