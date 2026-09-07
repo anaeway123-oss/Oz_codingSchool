@@ -1,0 +1,14 @@
+## 6. API 및 AI Worker 코드 작성·병합 & 7. 아키텍처 설계 및 적용
+- 무엇을 진행했는가: 
+  - AI Worker 구현과 Event-Driven Architecture가 실제 서비스에 연결되는 전체 파이프라인을 구축하였음
+  - 핵심 흐름: FastAPI → Redis Task Queue → AI Worker → SimpleCNN → Redis Pub/Sub → FastAPI → DB 저장으로 이어지는 데이터 통신 및 추론 과정을 구현하였음
+- 실제 사용한 파일/기능/브랜치: 
+  - `worker/main.py`, `worker/redis_client.py`
+  - 작업 브랜치: `feature/day4-hyomin-worker-architecture`
+- 진행 방식 또는 선택 이유: 
+  - 동기 처리 시 발생하는 API 서버 병목을 해결하기 위해 Redis 기반 비동기 메시지 큐 아키텍처를 적용하였음
+  - 인프라 복잡도를 낮추기 위해 단일 Redis를 Task Queue와 Pub/Sub 채널로 동시에 활용하는 주요 결정을 내렸음
+- 확인/테스트 결과: 
+  - Worker 동작 확인 및 E2E 테스트 결과, 설계한 아키텍처 흐름대로 AI 예측과 DB 저장이 지연 없이 정상적으로 연결됨을 확인했음
+- 한 줄 회고: 
+  - 아키텍처 설계 문서가 실제 코드로 연결되는 핵심 흐름을 직접 구현하며 Event-Driven 구조를 깊이 이해할 수 있었다.
