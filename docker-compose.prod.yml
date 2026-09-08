@@ -70,6 +70,12 @@ services:
       timeout: 3s
       retries: 5
 
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
 volumes:
   mysql_volume:
   static_volume:
